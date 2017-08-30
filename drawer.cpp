@@ -2,8 +2,8 @@
 #include <algorithm>
 
 //UTILITY FUNCTION
-template<class Comparer>
-static int height(glyph_container &,Comparer c);
+
+static int height(glyph_container &);
 static int count_all_glyph(glyph_container &);
 static int abs_n(int number);
 
@@ -92,8 +92,8 @@ static int abs_n(int number)
         return number;
 }
 
-template<class Comparer>
-static int height(glyph_container &container,Comparer c)
+
+static int height(glyph_container &container)
 {
     int current = 0;
     int start_size = container.size();
@@ -108,15 +108,17 @@ static int height(glyph_container &container,Comparer c)
         container.pop_front();
         if (f = dynamic_cast<fracture *>(item.get()))
         {
-            
+            int t_c = abs_n(height(f->top));
+            int b_c = height(f->bottom);
+            current = std::max(t_c,b_c);
         }
         else if (r = dynamic_cast<root *>(item.get()))
         {
-            current = c(current, height(r->argument,c));
+            current = std::max(current, height(r->argument));
         }
         else if (g = dynamic_cast<glyph *>(item.get()))
         {
-            current = c(current, g->level);
+            current = std::max(current, g->level);
         }
 
         container.push_back(std::move(item));
@@ -129,11 +131,11 @@ void drawer::draw_fracture(fracture* f)
 {
     int top_width = count_all_glyph(f->top);
     int bottom_width = count_all_glyph(f->bottom);
-    int top_depth = height(f->top,[](int a,int b){return std::min(a,b); }); //all elements in top row have negative index so I have to use std::min
-    int bottom_depth = height(f->bottom,[](int a,int b){return std::max(a,b); }); //bottom row has positive index
+    int top_depth = height(f->top);
+    int bottom_depth = height(f->bottom);
 
     table[f->level].position(pos);
-    table[f->level].write(std::string(std::max(top_width,bottom_width)+std::max(abs_n(top_depth),bottom_depth),'-'));
+    table[f->level].write(std::string(std::max(top_width,bottom_width) + std::max(top_depth,bottom_depth),'-'));
 
     //set start position for writing
     table[f->level - 1].position(pos); 
@@ -164,7 +166,7 @@ void drawer::draw_fracture(fracture* f)
 
 void drawer::draw_root(root* r)
 {
-    int depth = height(r->argument,[](int a,int b){return std::min(a,b); });
+    int depth = height(r->argument);
     int width = count_all_glyph(r->argument) + depth;
 
     for(int level = r->level; level >= depth - 1; level--)
