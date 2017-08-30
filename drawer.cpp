@@ -2,8 +2,8 @@
 #include <algorithm>
 
 //UTILITY FUNCTION
-template<class Predicate>
-static int height(glyph_container &,Predicate p);
+template<class Comparer>
+static int height(glyph_container &,Comparer c);
 static int count_all_glyph(glyph_container &);
 static int abs_n(int number);
 
@@ -92,8 +92,8 @@ static int abs_n(int number)
         return number;
 }
 
-template<class Predicate>
-static int height(glyph_container &container,Predicate p)
+template<class Comparer>
+static int height(glyph_container &container,Comparer c)
 {
     int current = 0;
     int start_size = container.size();
@@ -108,16 +108,15 @@ static int height(glyph_container &container,Predicate p)
         container.pop_front();
         if (f = dynamic_cast<fracture *>(item.get()))
         {
-            current = p(current, height(f->top,p));
-            current -= height(f->bottom,p);
+            
         }
         else if (r = dynamic_cast<root *>(item.get()))
         {
-            current = p(current, height(r->argument,p));
+            current = c(current, height(r->argument,c));
         }
         else if (g = dynamic_cast<glyph *>(item.get()))
         {
-            current = p(current, g->level);
+            current = c(current, g->level);
         }
 
         container.push_back(std::move(item));
@@ -131,11 +130,12 @@ void drawer::draw_fracture(fracture* f)
     int top_width = count_all_glyph(f->top);
     int bottom_width = count_all_glyph(f->bottom);
     int top_depth = height(f->top,[](int a,int b){return std::min(a,b); }); //all elements in top row have negative index so I have to use std::min
-    int bottom_depth = height(f->top,[](int a,int b){return std::max(a,b); }); //bottom row has positive index
+    int bottom_depth = height(f->bottom,[](int a,int b){return std::max(a,b); }); //bottom row has positive index
 
     table[f->level].position(pos);
     table[f->level].write(std::string(std::max(top_width,bottom_width)+std::max(abs_n(top_depth),bottom_depth),'-'));
 
+    //set start position for writing
     table[f->level - 1].position(pos); 
     table[f->level + 1].position(pos);
 
