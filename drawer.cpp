@@ -2,13 +2,11 @@
 #include <algorithm>
 
 //UTILITY FUNCTION
-
-
 template<class Predicate>
 static int height(glyph_container &,Predicate p);
 static int count_all_glyph(glyph_container &);
 static int abs_n(int number);
-//SPECIFIC DRAWING FUNCTION
+
 
 
 void drawer::add_glyphes(glyph_container &container)
