@@ -134,7 +134,7 @@ void drawer::draw_fracture(fracture* f)
     int bottom_depth = height(f->top,[](int a,int b){return std::max(a,b); }); //bottom row has positive index
 
     table[f->level].position(pos);
-    table[f->level].write(std::string(std::max(top_width,bottom_width)+std::max(top_depth,bottom_depth),'-'));
+    table[f->level].write(std::string(std::max(top_width,bottom_width)+std::max(abs_n(top_depth),bottom_depth),'-'));
 
     table[f->level - 1].position(pos); 
     table[f->level + 1].position(pos);
