@@ -8,17 +8,7 @@ glyph_container interpreter::run(token_container &tokens)
 
     while (!tokens.empty())
     {
-        previous_backtrack.push(tokens.top());
-        tokens.pop();
         
-        token next_token = tokens.top();
-        tokens.pop();
-        
-        if (next_token.type == sup)
-        {
-
-        }    
-
     }
 
     return container;
