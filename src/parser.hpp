@@ -2,14 +2,14 @@
 #define PARSER_HPP
 
 #include <string>
-#include <deque>
+#include <stack>
 #include "token.hpp"
 
 class parser{
 
 public:
     explicit parser(std::string equation) : expression(equation) { /**/ }
-    std::deque<token> parse();
+    token_container parse();
       
 private:
     std::string expression;

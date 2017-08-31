@@ -2,6 +2,7 @@
 #define TOKEN_HPP
 
 #include <string>
+#include <queue>
 
 enum token_type 
 {
@@ -24,5 +25,7 @@ struct token
     token_type type;
     std::string identifier; // will be used by interpreter
 };
+
+using token_container = std::queue<token>;
 
 #endif //TOKEN_HPp

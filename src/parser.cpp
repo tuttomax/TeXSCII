@@ -3,9 +3,9 @@
 #include <exception>
 #include <cctype>
 
-std::deque<token> parser::parse()
+token_container parser::parse()
 {
-    std::deque<token> output;
+    token_container output;
 
     std::istringstream base_stream(expression);
     base_stream >> std::noskipws;
@@ -51,7 +51,7 @@ std::deque<token> parser::parse()
                 {
                     t.type = builtinfunc;
                     t.identifier = base_name;
-                    output.push_back(t);
+                    output.push(t);
                     return output;
                 }
             }
@@ -115,7 +115,7 @@ std::deque<token> parser::parse()
                     base_stream.clear();
                     t.type = number;
                     t.identifier = d;
-                    output.push_back(t);
+                    output.push(t);
                     return output;
                 }
             }
@@ -138,7 +138,7 @@ std::deque<token> parser::parse()
                     base_stream.clear();
                     t.type = general_string;
                     t.identifier = base_name;
-                    output.push_back(t);
+                    output.push(t);
                     return output;
                 }
             }
@@ -149,7 +149,7 @@ std::deque<token> parser::parse()
             base_name = std::string();
         }
 
-        output.push_back(t);
+        output.push(t);
     }
     return output;
 }
