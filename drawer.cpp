@@ -200,3 +200,70 @@ void drawer::draw_glyph(glyph *g)
     table[g->level].write(g->data);
     pos += g->data.size();
 }
+
+int depth_root(root* r)
+{
+    int start = r->argument.size();
+    root* r_ptr;
+    fracture* f_ptr;
+    glyph* g_ptr;
+
+    int current = 0;
+
+    while (start>0)
+    {
+        auto item = std::move(r->argument.front());
+        r->argument.pop_front();
+
+        if (r_ptr = dynamic_cast<root*>(item.get()))
+        {
+            current += depth_root(r_ptr);
+        }
+        else if(f_ptr = dynamic_cast<fracture*>(item.get()))
+        {
+            int start_top = f_ptr->top.size();
+            int start_bottom = f_ptr->bottom.size();
+            while (start_top > 0 || start_bottom > 0)
+            {
+                if (start_top > 0)
+                {
+                    auto item = std::move(f_ptr->top.front());
+                    f_ptr->top.pop_front();
+                    if (r_ptr = dynamic_cast<root*>(item.get()))
+                    {
+                        current += depth_root(r_ptr);
+                    }
+                    else if (f_ptr = dynamic_cast<fracture*>(item.get()))
+                    {
+
+                    }
+                    else if (g_ptr = dynamic_cast<glyph*>(item.get()))
+                    {
+                        current += g_ptr->level;
+                    }
+                    f_ptr->top.push_back(std::move(item));
+                    start_top--;
+                }
+                if (start_bottom > 0)
+                {
+                    auto item = std::move(f_ptr->bottom.front());
+                    f_ptr->bottom.pop_front();
+
+                    f_ptr->bottom.push_back(std::move(item));
+                    start_bottom--;
+                }
+            }
+
+
+        }
+        else if (g_ptr = dynamic_cast<glyph*>(item.get()))
+        {
+            current += g_ptr->level;
+        }
+
+        r->argument.push_back(std::move(item));
+    }
+
+    return current;
+} 
+

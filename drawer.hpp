@@ -5,7 +5,10 @@
 #include <ostream>
 #include <vector>
 #include <string>
+#include <tuple>
+
 #include "glyph.hpp"
+
 
 class row
 {
@@ -71,7 +74,11 @@ private:
   void draw_fracture(fracture* f);
   void draw_root(root* r);
   void draw_glyph(glyph* g);
+
+  int depth_root(root* r);
+
   
+
 };
 
 #endif //DRAWER_HPP
