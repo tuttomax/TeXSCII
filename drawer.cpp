@@ -48,70 +48,14 @@ void drawer::print(std::ostream &os)
 
 void drawer::draw_fracture(fracture *f)
 {
-    int top_width = count_all_chars(f->top);
-    int bottom_width = count_all_chars(f->bottom);
-    int top_depth = height(f->top);
-    int bottom_depth = height(f->bottom);
-
-    table[f->level].position(pos);
-    table[f->level].write(std::string(std::max(top_width, bottom_width) + std::max(top_depth, bottom_depth), '-'));
-
-    //set start position for writing
-    table[f->level - 1].position(pos);
-    table[f->level + 1].position(pos);
-
-    while (!f->top.empty() || !f->bottom.empty())
-    {
-        base_glyph_ptr top_item;
-        base_glyph_ptr bottom_item;
-
-        //for now avoid align to center
-        int temp = pos;
-
-        if (!f->top.empty())
-        {
-            top_item = std::move(f->top.front());
-            f->top.pop_front();
-            add_glyph(top_item);
-        }
-        if (!f->bottom.empty())
-        {
-            bottom_item = std::move(f->bottom.front());
-            f->bottom.pop_front();
-            pos = temp;
-            add_glyph(bottom_item);
-        }
-    }
+   
 }
 
 void drawer::draw_root(root *r)
 {
-    int depth = height(r->argument);
-    int width = count_all_chars(r->argument) + depth;
-
-    for (int level = r->level; level >= depth - 1; level--)
-    {
-        table[level].position(pos);
-
-        if (level == r->level)
-        {
-            table[level].write('V');
-            pos++;
-        }
-        else if (level == depth - 1)
-        {
-            if (!dynamic_cast<sqrt *>(r))
-                table[level].write(r->power);
-            table[level].write(std::string(width, '_'));
-        }
-        else
-        {
-            table[level].write('/');
-            pos++;
-        }
-    }
-
-    add_glyphes(r->argument);
+   int w = width(r->argument);
+   int h = heiht(r->argument);
+   
 }
 
 void drawer::draw_glyph(glyph *g)
