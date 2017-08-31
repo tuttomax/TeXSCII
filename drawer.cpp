@@ -3,8 +3,6 @@
 
 //UTILITY FUNCTION
 
-static int height(glyph_container &);
-static int count_all_chars(glyph_container &);
 static int abs_n(int number);
 
 void drawer::add_glyphes(glyph_container &container)
@@ -46,84 +44,6 @@ void drawer::print(std::ostream &os)
     {
         pair.second.print(os);
     }
-}
-
-static int count_all_chars(glyph_container &container)
-{
-    int count = 0;
-    int start_size = container.size();
-    glyph *g;
-    fracture *f;
-    root *r;
-
-    while (start_size > 0)
-    {
-        auto item = std::move(container.front());
-        container.pop_front();
-        if (f = dynamic_cast<fracture *>(item.get()))
-        {
-            int top_l = count_all_chars(f->top);
-            int bottom_l = count_all_chars(f->bottom);
-            count += std::max(top_l, bottom_l);
-        }
-        else if (r = dynamic_cast<root *>(item.get()))
-        {
-            count += count_all_chars(r->argument);
-            int depth = height(r->argument);
-            count += depth;
-        }
-        else if (g = dynamic_cast<glyph *>(item.get()))
-        {
-            count += g->data.size();
-        }
-
-        container.push_back(std::move(item));
-        start_size--;
-    }
-
-    return count;
-}
-
-static int abs_n(int number)
-{
-    if (number < 0)
-        return -number;
-    else
-        return number;
-}
-
-static int height(glyph_container &container)
-{
-    int current = 0;
-    int start_size = container.size();
-
-    glyph *g;
-    fracture *f;
-    root *r;
-
-    while (start_size > 0)
-    {
-        auto item = std::move(container.front());
-        container.pop_front();
-        if (f = dynamic_cast<fracture *>(item.get()))
-        {
-            int t_c = abs_n(height(f->top));
-            int b_c = height(f->bottom);
-            current = std::max(t_c, b_c);
-        }
-        else if (r = dynamic_cast<root *>(item.get()))
-        {
-            current = std::max(current, height(r->argument));
-        }
-        else if (g = dynamic_cast<glyph *>(item.get()))
-        {
-            current = std::max(current, g->level);
-        }
-
-        container.push_back(std::move(item));
-        start_size--;
-    }
-    return current;
 }
 
 void drawer::draw_fracture(fracture *f)
@@ -201,69 +121,72 @@ void drawer::draw_glyph(glyph *g)
     pos += g->data.size();
 }
 
-int depth_root(root* r)
+static int abs_n(int number)
 {
-    int start = r->argument.size();
-    root* r_ptr;
-    fracture* f_ptr;
-    glyph* g_ptr;
+    if (number < 0)
+        return -number;
+    else
+        return number;
+}
 
-    int current = 0;
-
-    while (start>0)
+int drawer::height(glyph_container &container)
+{
+    int h = 0;
+    int n = container.size();
+    
+    fracture* f;
+    root* r;
+    glyph* g;
+    
+    while (n > 0)
     {
-        auto item = std::move(r->argument.front());
-        r->argument.pop_front();
+        auto item = std::move(container.front());
+        container.pop_front();
 
-        if (r_ptr = dynamic_cast<root*>(item.get()))
+        if (f = dynamic_cast<fracture*>(item.get()))
         {
-            current += depth_root(r_ptr);
+            h = std::max(h,height(f->top)+height(f->bottom)+1); //add row for char '-'            
         }
-        else if(f_ptr = dynamic_cast<fracture*>(item.get()))
+        else if (r = dynamic_cast<root*>(item.get()))
         {
-            int start_top = f_ptr->top.size();
-            int start_bottom = f_ptr->bottom.size();
-            while (start_top > 0 || start_bottom > 0)
-            {
-                if (start_top > 0)
-                {
-                    auto item = std::move(f_ptr->top.front());
-                    f_ptr->top.pop_front();
-                    if (r_ptr = dynamic_cast<root*>(item.get()))
-                    {
-                        current += depth_root(r_ptr);
-                    }
-                    else if (f_ptr = dynamic_cast<fracture*>(item.get()))
-                    {
-
-                    }
-                    else if (g_ptr = dynamic_cast<glyph*>(item.get()))
-                    {
-                        current += g_ptr->level;
-                    }
-                    f_ptr->top.push_back(std::move(item));
-                    start_top--;
-                }
-                if (start_bottom > 0)
-                {
-                    auto item = std::move(f_ptr->bottom.front());
-                    f_ptr->bottom.pop_front();
-
-                    f_ptr->bottom.push_back(std::move(item));
-                    start_bottom--;
-                }
-            }
-
-
+            h = std::max(h,height(r->argument)+1);  //add row for char '_'
         }
-        else if (g_ptr = dynamic_cast<glyph*>(item.get()))
+        else if (g = dynamic_cast<glyph*>(item.get()))
         {
-            current += g_ptr->level;
+            h = std::max(h,abs_n(g->level));
         }
-
-        r->argument.push_back(std::move(item));
+        container.push_back(std::move(item));
     }
+    return h;
+}
 
-    return current;
-} 
+int drawer::width(glyph_container& container)
+{
+    int w = 0;
+    int n = container.size();
 
+    fracture* f;
+    root* r;
+    glyph* g;
+    
+    while (n > 0)
+    {
+        auto item = std::move(container.front());
+        container.pop_front();
+
+        if (f = dynamic_cast<fracture*>(item.get()))
+        {
+            w += std::max(width(f->top),width(f->bottom));
+        }
+        else if (r = dynamic_cast<root*>(item.get()))
+        {
+            w += width(r->argument) + height(r->argument); //add width for char '/' and 'V';
+        }
+        else if (g = dynamic_cast<glyph*>(item.get()))
+        {
+            w += g->data.size();
+        }
+        container.push_back(std::move(item));
+    }
+    return w;
+}

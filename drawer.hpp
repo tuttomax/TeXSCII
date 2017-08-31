@@ -9,7 +9,6 @@
 
 #include "glyph.hpp"
 
-
 class row
 {
 
@@ -41,8 +40,9 @@ public:
 
   void position(int pos)
   {
-    if (current_position < pos) fill(pos-current_position,' ');
-    
+    if (current_position < pos)
+      fill(pos - current_position, ' ');
+
     current_position = pos;
   }
   int position() { return current_position; }
@@ -71,14 +71,12 @@ private:
   std::map<int, row> table;
   int pos = 0;
 
-  void draw_fracture(fracture* f);
-  void draw_root(root* r);
-  void draw_glyph(glyph* g);
+  void draw_fracture(fracture *f);
+  void draw_root(root *r);
+  void draw_glyph(glyph *g);
 
-  int depth_root(root* r);
-
-  
-
+  int height(glyph_container &container);
+  int width(glyph_container &container);
 };
 
 #endif //DRAWER_HPP

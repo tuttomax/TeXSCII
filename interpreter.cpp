@@ -72,7 +72,7 @@ glyph_container interpreter::run(std::deque<token> &tokens, int &current_level)
                 {
                     current = tokens.front();
                     tokens.pop_front();
-                    if (current.type == sub) current_level--; //in order to insert extra space 
+                    
                     if (current.type == open_b) backtrack_bracket.push(current);
                     if (current.type == close_b) backtrack_bracket.pop();
                     
@@ -89,7 +89,7 @@ glyph_container interpreter::run(std::deque<token> &tokens, int &current_level)
                     current = tokens.front();
                     tokens.pop_front();
 
-                    if (current.type == sup) current_level++; //in order to insert extra space
+
                     if (current.type == open_b) backtrack_bracket.push(current);
                     if (current.type == close_b) backtrack_bracket.pop();
                     
@@ -133,9 +133,6 @@ glyph_container interpreter::run(std::deque<token> &tokens, int &current_level)
                     current = tokens.front();
                     tokens.pop_front();
 
-                  
-                    if (current.type == sup) current_level++;
-                    if (current.type == sub) current_level--;
                     if (current.type == open_b) backtrack_bracket.push(current);
                     if (current.type == close_b) backtrack_bracket.pop();
 
@@ -158,9 +155,6 @@ glyph_container interpreter::run(std::deque<token> &tokens, int &current_level)
                     current = tokens.front();
                     tokens.pop_front();
 
-                    
-                    if (current.type == sup) current_level++;
-                    if (current.type == sub) current_level--;
                     if (current.type == open_b) backtrack_bracket.push(current);
                     if (current.type == close_b) backtrack_bracket.pop();
 
