@@ -2,6 +2,9 @@
 .vscode
 .old
 
+#CMake
+build
+CMakeLists.txt
 
 #Custom
 *.ps1
