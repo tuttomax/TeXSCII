@@ -1,5 +1,6 @@
 #include "interpreter.hpp"
 
+#include <exception>
 #include <stack>
 
 glyph_container interpreter::run(token_container &tokens)
@@ -45,7 +46,121 @@ glyph_container interpreter::run(token_container &tokens)
                 container.push(std::move(item));
             }
         }
-        else if (current_token.type == general_string ||
+        else if (current_token.type == builtinfunc)
+        {
+            if (current_token.identifier == "frac")
+            {
+                auto ptr = std::make_unique<fraction>();
+
+                std::stack<token> backtrack_bracket;
+                token_container backtrack;
+
+                while (current_token.type != close_b || !backtrack_bracket.empty())
+                {
+                    current_token = tokens.front();
+                    tokens.pop();
+
+                    if (current_token.type == open_b)
+                        backtrack_bracket.push(current_token);
+                    if (current_token.type == close_b)
+                        backtrack_bracket.pop();
+
+                    backtrack.push(current_token);
+                }
+
+                ptr->top = run(backtrack);
+
+                do
+                {
+                    current_token = tokens.front();
+                    tokens.pop();
+
+                    if (current_token.type == open_b)
+                        backtrack_bracket.push(current_token);
+                    if (current_token.type == close_b)
+                        backtrack_bracket.pop();
+
+                    backtrack.push(current_token);
+
+                } while (current_token.type != close_b || !backtrack_bracket.empty());
+            
+                ptr->bottom = run(backtrack);
+
+                container.push(std::move(ptr));
+            }
+            else if (current_token.identifier == "root")
+            {
+                auto ptr = std::make_unique<root>();
+                std::stack<token> backtrack_bracket;
+                token_container backtrack;
+
+                while (current_token.type != close_b || !backtrack_bracket.empty())
+                {
+                    current_token = tokens.front();
+                    tokens.pop();
+
+                    if (current_token.type == open_b)
+                        backtrack_bracket.push(current_token);
+                    if (current_token.type == close_b)
+                        backtrack_bracket.pop();
+
+                    backtrack.push(current_token);
+                }
+
+                auto internal_container = run(backtrack);
+                if (internal_container.size() > 1 ) throw std::exception();
+                auto item = std::move(internal_container.front());
+                internal_container.pop();
+                auto power_ptr = dynamic_cast<glyph*>(item.get());
+                ptr->power = std::stoi(power_ptr->data);
+
+                do
+                {
+                    current_token = tokens.front();
+                    tokens.pop();
+
+                    if (current_token.type == open_b)
+                        backtrack_bracket.push(current_token);
+                    if (current_token.type == close_b)
+                        backtrack_bracket.pop();
+
+                    backtrack.push(current_token);
+
+                } while (current_token.type != close_b || !backtrack_bracket.empty());
+
+                ptr->argument = run(backtrack);
+
+                container.push(std::move(ptr));
+            }
+            else if (current_token.identifier == "sqrt")
+            {
+                auto ptr = std::make_unique<sqrt>();
+                std::stack<token> backtrack_bracket;
+                token_container backtrack;
+
+                while (current_token.type != close_b || !backtrack_bracket.empty())
+                {
+                    current_token = tokens.front();
+                    tokens.pop();
+
+                    if (current_token.type == open_b)
+                        backtrack_bracket.push(current_token);
+                    if (current_token.type == close_b)
+                        backtrack_bracket.pop();
+
+                    backtrack.push(current_token);
+                }
+
+                ptr->argument = run(backtrack);
+                
+                container.push(std::move(ptr));
+            }
+            else if (current_token.identifier == "pi")
+            {
+                add_glyph(container, current_token);
+            }
+        }
+        else if (current_token.type == general_string || //here handle also sup '^' and sub '^'
                  current_token.type == number)
         {
             if (next_token.type == sup)

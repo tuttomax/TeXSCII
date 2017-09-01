@@ -4,6 +4,7 @@
 #include <ostream>
 #include "glyph.hpp"
 #include "token.hpp"
+#include "drawer.hpp"
 
 class interpreter
 {

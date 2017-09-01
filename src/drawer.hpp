@@ -11,7 +11,7 @@ public:
     void show(std::ostream& stream);
 
 private:
-
+    void add_glyph(base_glyph_ptr& smart_ptr);
 };
 
 #endif //DRAWER_HPP
