@@ -8,20 +8,20 @@
 
 class drawer
 {
-public:
-    void show(std::ostream& os,glyph_container& container)
-    {
-        while (!container.empty())
-        {
-            auto item = std::move(container.front());
-            container.pop();
+  public:
+    void show(std::ostream &);
+    void add_glyphes(glyph_container &);
+  private:
+   
+    void add_glyph(base_glyph *);
 
-            os << item->to_string();
-        }
-    }
-    
-private:
+    void draw_fraction(fraction *);
+    void draw_root(root *);
+    void draw_sup(sup_glyph *);
+    void draw_sub(sub_glyph *);
+    void draw_glyph(glyph *);
 
+    std::map<int, std::string> table;
 };
 
 #endif //DRAWER_HPP

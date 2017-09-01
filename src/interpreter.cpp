@@ -46,6 +46,10 @@ glyph_container interpreter::run(token_container &tokens)
                 container.push(std::move(item));
             }
         }
+        else if (current_token.type == close_p)
+        {
+            add_glyph(container,current_token);
+        }
         else if (current_token.type == builtinfunc)
         {
             if (current_token.identifier == "frac")
