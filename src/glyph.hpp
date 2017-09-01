@@ -1,7 +1,7 @@
 #ifndef GLYPH_HPP
 #define GLYPH_HPP
 
-#include <stack>
+#include <queue>
 #include <memory>
 #include <string>
 
@@ -12,7 +12,7 @@ struct root;
 struct sqrt;
 
 using base_glyph_ptr = std::unique_ptr<base_glyph>;
-using glyph_container = std::stack<base_glyph_ptr>;
+using glyph_container = std::queue<base_glyph_ptr>;
 /*
 using glyph_ptr = std::unique_ptr<glyph>;
 using fraction = std::unique_ptr<fraction>;

@@ -10,7 +10,8 @@ int main(int length, char **args)
         parser p(args[1]);
         auto q = p.parse();
         interpreter i(std::cout);
-        i.run(q);
+        i.execute(q);
+
     }
 
     catch (std::exception &ex)

@@ -1,7 +1,7 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
-#include <stack>
+#include <queue>
 #include <string>
 
 
@@ -28,6 +28,6 @@ struct token
     std::string identifier;
 };
 
-using token_container = std::stack<token>;
+using token_container = std::queue<token>;
 
 #endif //TOKEN_HPP

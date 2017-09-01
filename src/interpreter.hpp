@@ -9,14 +9,20 @@ class interpreter
 {
 public:
     explicit interpreter(std::ostream& output_stream) : os(output_stream) { }
-    glyph_container run(token_container& container);
     
-    
+    void execute(token_container& container)
+    {
+        auto items = run(container);
+        blackboard.add_glyphes(items);
+        blackboard.show(os);
+    }
 
 
 private:
     std::ostream& os;
-
+    drawer blackboard;
+    
+    glyph_container run(token_container& container);
     void add_glyph(glyph_container& container,const token& t);
 };
 
