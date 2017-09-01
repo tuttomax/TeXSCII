@@ -2,16 +2,26 @@
 #define DRAWER_HPP
 
 #include <ostream>
+#include <map>
+
 #include "glyph.hpp"
 
 class drawer
 {
 public:
-    void add_glyphes(glyph_container& container);
-    void show(std::ostream& stream);
+    void show(std::ostream& os,glyph_container& container)
+    {
+        while (!container.empty())
+        {
+            auto item = std::move(container.front());
+            container.pop();
 
+            os << item->to_string();
+        }
+    }
+    
 private:
-    void add_glyph(base_glyph_ptr& smart_ptr);
+
 };
 
 #endif //DRAWER_HPP

@@ -5,6 +5,9 @@
 #include <memory>
 #include <string>
 
+#include <algorithm>
+#include <sstream>
+
 struct base_glyph;
 struct glyph;
 struct fraction;
@@ -22,7 +25,8 @@ using sqrt = std::unique_ptr<sqrt>;
 
 struct base_glyph
 {
-    virtual ~base_glyph() { }
+    virtual ~base_glyph() {}
+    
 };
 
 struct glyph : base_glyph
@@ -33,15 +37,17 @@ struct glyph : base_glyph
 
 struct sup_glyph : glyph
 {
-    explicit sup_glyph(const std::string& s) : glyph(s) {}
+    explicit sup_glyph(const std::string &s) : glyph(s) {}
     glyph_container sup;
+
 };
 
 struct sub_glyph : glyph
 {
-    explicit sub_glyph(const std::string& s) : glyph(s) {}
+    explicit sub_glyph(const std::string &s) : glyph(s) {}
 
     glyph_container sub;
+
 };
 
 struct fraction : glyph
@@ -50,6 +56,7 @@ struct fraction : glyph
 
     glyph_container top;
     glyph_container bottom;
+
 };
 
 struct root : glyph
@@ -58,6 +65,7 @@ struct root : glyph
 
     int power;
     glyph_container argument;
+
 };
 
 struct sqrt : root
@@ -66,6 +74,7 @@ struct sqrt : root
     {
         power = 2;
     }
+
 };
 
 #endif //GLYPH_HPP

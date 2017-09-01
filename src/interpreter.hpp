@@ -14,8 +14,7 @@ public:
     void execute(token_container& container)
     {
         auto items = run(container);
-        blackboard.add_glyphes(items);
-        blackboard.show(os);
+        blackboard.show(os,items);
     }
 
 
