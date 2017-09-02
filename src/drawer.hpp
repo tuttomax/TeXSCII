@@ -11,7 +11,7 @@ class drawer
 {
 public:
   void show(std::ostream &);
-  void add_glyphes(glyph_container &);
+  void add_glyphes(glyph_container &, base_glyph* sender = nullptr);
 
 private:
   void add_glyph(base_glyph *, base_glyph* sender = nullptr);

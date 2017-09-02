@@ -1,25 +1,24 @@
 #include "drawer.hpp"
+#include <algorithm>
 
-#include <iomanip>
-
-void drawer::add_glyphes(glyph_container &container)
+void drawer::add_glyphes(glyph_container &container, base_glyph *sender)
 {
     while (!container.empty())
     {
         auto item = std::move(container.front());
         container.pop();
 
-        add_glyph(item.get());
+        add_glyph(item.get(), sender);
     }
 }
 
-void drawer::add_glyph(base_glyph *ptr,base_glyph* sender)
+void drawer::add_glyph(base_glyph *ptr, base_glyph *sender)
 {
     fraction *f;
     root *r;
     sub_glyph *sub_g;
     sup_glyph *sup_g;
-    sub_sup_glyph* ss_g;
+    sub_sup_glyph *ss_g;
     glyph *g;
 
     if (f = dynamic_cast<fraction *>(ptr))
@@ -38,19 +37,19 @@ void drawer::add_glyph(base_glyph *ptr,base_glyph* sender)
     {
         draw_sup(sup_g);
     }
-    else if (ss_g = dynamic_cast<sub_sup_glyph*>(ptr))
+    else if (ss_g = dynamic_cast<sub_sup_glyph *>(ptr))
     {
         draw_sub_sup(ss_g);
     }
     else if (g = dynamic_cast<glyph *>(ptr))
     {
-        draw_glyph(g,sender);
+        draw_glyph(g, sender);
     }
 }
 
 void drawer::show(std::ostream &os)
 {
-    for (auto& pair : table)
+    for (auto &pair : table)
     {
         os << pair.second.text() << std::endl;
     }
@@ -67,62 +66,63 @@ void drawer::draw_root(root *r)
 void drawer::draw_sub(sub_glyph *s)
 {
     table[level].write(s->data);
+    pos += s->data.size();
+
     level++;
-    while(!s->sub.empty())
-    {
-        auto item = std::move(s->sub.front());
-        s->sub.pop();
-        add_glyph(item.get());                
-    }
-    level--;    
+    add_glyphes(s->sub, s);
+    level--;
 }
 
 void drawer::draw_sup(sup_glyph *s)
 {
-    level--;
-    while(!s->sup.empty())
-    {
-        auto item = std::move(s->sup.front());
-        s->sup.pop();
-        add_glyph(item.get());                
-    }
-    level++;
     table[level].write(s->data);
+    pos += s->data.size();
+
+    level--;
+    add_glyphes(s->sup,s);
+    level++;
 }
-void drawer::draw_sub_sup(sub_sup_glyph* s)
+void drawer::draw_sub_sup(sub_sup_glyph *s)
 {
+
     level--;
-    while(!s->sup.empty())
-    {
-        auto item = std::move(s->sup.front());
-        s->sup.pop();
-        add_glyph(item.get(),s);                
-    }
+    add_glyphes(s->sup,s);
     level++;
+
     table[level].write(s->data);
+    pos += s->data.size();
+
     level++;
-    while(!s->sub.empty())
-    {
-        auto item = std::move(s->sub.front());
-        s->sub.pop();
-        add_glyph(item.get(),s);        
-    }
+    add_glyphes(s->sub,s);    
     level--;
 }
-void drawer::draw_glyph(glyph *g,base_glyph* sender)
+void drawer::draw_glyph(glyph *g, base_glyph *sender)
 {
     if (sender)
     {
-        if (dynamic_cast<sub_sup_glyph*>(sender))
+        if (dynamic_cast<sub_sup_glyph *>(sender))
         {
-            table[level].fill_if(pos,' ');
+            
             table[level].write(g->data);
+            pos += g->data.size();
+        }
+        else if (dynamic_cast<sub_glyph *>(sender))
+        {
+            
+            table[level].write(g->data);
+            pos += g->data.size();
+        }
+        else if (dynamic_cast<sup_glyph *>(sender))
+        {
+            
+            table[level].write(g->data);
+            pos += g->data.size();
         }
     }
-    else 
+    else
     {
-        table[level].fill_if(pos,' ');
+        
         table[level].write(g->data);
-        pos += g->data.size();    
+        pos += g->data.size();
     }
 }
