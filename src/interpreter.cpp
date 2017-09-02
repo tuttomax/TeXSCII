@@ -7,8 +7,6 @@ glyph_container interpreter::run(token_container &tokens)
 {
     glyph_container container;
 
-    token_container previous_backtrack;
-
     while (!tokens.empty())
     {
         auto current_token = tokens.front();
@@ -48,7 +46,7 @@ glyph_container interpreter::run(token_container &tokens)
         }
         else if (current_token.type == close_p)
         {
-            add_glyph(container,current_token);
+            add_glyph(container, current_token);
         }
         else if (current_token.type == builtinfunc)
         {
@@ -87,7 +85,7 @@ glyph_container interpreter::run(token_container &tokens)
                     backtrack.push(current_token);
 
                 } while (current_token.type != close_b || !backtrack_bracket.empty());
-            
+
                 ptr->bottom = run(backtrack);
 
                 container.push(std::move(ptr));
@@ -112,10 +110,11 @@ glyph_container interpreter::run(token_container &tokens)
                 }
 
                 auto internal_container = run(backtrack);
-                if (internal_container.size() > 1 ) throw std::exception();
+                if (internal_container.size() > 1)
+                    throw std::exception();
                 auto item = std::move(internal_container.front());
                 internal_container.pop();
-                auto power_ptr = dynamic_cast<glyph*>(item.get());
+                auto power_ptr = dynamic_cast<glyph *>(item.get());
                 ptr->power = std::stoi(power_ptr->data);
 
                 do
@@ -156,7 +155,7 @@ glyph_container interpreter::run(token_container &tokens)
                 }
 
                 ptr->argument = run(backtrack);
-                
+
                 container.push(std::move(ptr));
             }
             else if (current_token.identifier == "pi")
@@ -167,6 +166,7 @@ glyph_container interpreter::run(token_container &tokens)
         else if (current_token.type == general_string || //here handle also sup '^' and sub '^'
                  current_token.type == number)
         {
+
             if (next_token.type == sup)
             {
                 tokens.pop();
@@ -195,6 +195,10 @@ glyph_container interpreter::run(token_container &tokens)
             }
             else if (next_token.type == sub)
             {
+                std::string id = current_token.identifier;
+
+                glyph_container sup_c,sub_c;
+
                 tokens.pop();
 
                 token_container backtrack;
@@ -214,10 +218,48 @@ glyph_container interpreter::run(token_container &tokens)
 
                     backtrack.push(current_token);
                 }
+                
+                sub_c = run(backtrack);
 
-                ptr->sub = run(backtrack);
+                next_token = tokens.front();
 
-                container.push(std::move(ptr));
+                if (next_token.type == sup) //handle _{sub}^{sup}
+                {
+                    
+                    tokens.pop();
+                    
+                    auto ptr = std::make_unique<sub_sup_glyph>(id);
+                    
+
+                    token_container backtrack;
+                    std::stack<token> backtrack_bracket;
+
+                    
+                    do 
+                    {
+                        current_token = tokens.front();
+                        tokens.pop();
+
+                        if (current_token.type == open_b)
+                            backtrack_bracket.push(current_token);
+                        if (current_token.type == close_b)
+                            backtrack_bracket.pop();
+
+                        backtrack.push(current_token);
+                    } while (current_token.type != close_b || !backtrack_bracket.empty());
+                    
+                    sup_c = run(backtrack);
+
+                    ptr->sub = std::move(sub_c);
+                    ptr->sup = std::move(sup_c);
+
+                    container.push(std::move(ptr));
+                }
+                else
+                {
+                    ptr->sub = std::move(sub_c);
+                    container.push(std::move(ptr));
+                }
             }
             else
             {
