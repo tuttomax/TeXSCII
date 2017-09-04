@@ -3,63 +3,73 @@
 
 #include <ostream>
 #include <map>
+#include <stdexcept>
+#include <stack>
+#include <array>
+
 
 #include "glyph.hpp"
+
 class row;
 
 class drawer
 {
 public:
   void show(std::ostream &);
-  void add_glyphes(glyph_container &, base_glyph* sender = nullptr);
+  void add_glyphes(glyph_container &, base_glyph *sender = nullptr);
 
 private:
-  void add_glyph(base_glyph *, base_glyph* sender = nullptr);
+  void add_glyph(base_glyph *, base_glyph *sender = nullptr);
 
   void draw_fraction(fraction *);
   void draw_root(root *);
   void draw_sup(sup_glyph *);
   void draw_sub(sub_glyph *);
-  void draw_sub_sup(sub_sup_glyph*);
-  void draw_glyph(glyph *, base_glyph* sender = nullptr);
+  void draw_sub_sup(sub_sup_glyph *);
+  void draw_glyph(glyph *, base_glyph *sender = nullptr);
 
   int pos = 0;
   int level = 0;
+
   std::map<int, row> table;
+
 };
 
 class row
 {
+ 
 public:
-  void write(const std::string &text)
-  {
-    data += text;
-    pos += text.size();
-  }
-  void write(const char c)
-  {
-    data += c;
-    pos++;
-  }
-
   void write(int i)
   {
     write((char)(i + '0'));
   }
-
-  void fill_if(int n,char c)
+  void write(const std::string& s)
   {
-    if (pos < n) data += std::string(n-pos,c);
+    for(const auto& c : s)
+    {
+      write(c);
+    }
+  }
+  void write(const char c)
+  {
+    if (current_position > 1024 ) throw std::runtime_error("row error: pos is greater thand SIZE");
+    
+    internal_text[current_position] = c;
+    current_position++;
   }
 
-  int position() { return pos; }
-  void position(int p) { pos = p; }
-  int width() { return data.size(); }
-  std::string text() { return data; }  
-private:
-  int pos;
-  std::string data;
-};
+  int position() { return current_position; }
+  void position(int pos) { current_position = pos; }
+  
+  std::string text() 
+  {
+    return std::string(internal_text.cbegin(),internal_text.cend());
+  }
 
+private:
+  int current_position = 0;
+  std::array<char,1024> internal_text;
+  
+};
 
 #endif //DRAWER_HPP
