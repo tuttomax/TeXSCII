@@ -11,7 +11,7 @@ glyph_container interpreter::run(token_container &tokens)
     {
         auto current_token = tokens.front();
         tokens.pop();
-        token next_token;
+        token next_token = empty_token;
         if (!tokens.empty())
             next_token = tokens.front();
 
@@ -34,7 +34,7 @@ glyph_container interpreter::run(token_container &tokens)
 
                 backtrack.push(current_token);
             }
-
+           
             auto internal_container = run(backtrack);
 
             while (!internal_container.empty())
@@ -43,10 +43,40 @@ glyph_container interpreter::run(token_container &tokens)
                 internal_container.pop();
                 container.push(std::move(item));
             }
-        }
-        else if (current_token.type == close_p)
-        {
-            add_glyph(container, current_token);
+
+            next_token = tokens.front();
+
+            if (next_token.type == sup)
+            {
+                
+                tokens.pop();
+
+                token_container backtrack;
+                std::stack<token> backtrack_bracket;
+
+                auto ptr = std::make_unique<sup_glyph>(current_token.identifier);
+
+                while (current_token.type != close_b || !backtrack_bracket.empty())
+                {
+                    current_token = tokens.front();
+                    tokens.pop();
+
+                    if (current_token.type == open_b)
+                        backtrack_bracket.push(current_token);
+                    if (current_token.type == close_b)
+                        backtrack_bracket.pop();
+
+                    backtrack.push(current_token);
+                }
+
+                ptr->sup = run(backtrack);
+
+                container.push(std::move(ptr));
+            }
+            else
+            {
+                add_glyph(container,token{close_p,")"});
+            }
         }
         else if (current_token.type == builtinfunc)
         {
@@ -197,7 +227,7 @@ glyph_container interpreter::run(token_container &tokens)
             {
                 std::string id = current_token.identifier;
 
-                glyph_container sup_c,sub_c;
+                glyph_container sup_c, sub_c;
 
                 tokens.pop();
 
@@ -218,24 +248,22 @@ glyph_container interpreter::run(token_container &tokens)
 
                     backtrack.push(current_token);
                 }
-                
+
                 sub_c = run(backtrack);
 
                 next_token = tokens.front();
 
                 if (next_token.type == sup) //handle _{sub}^{sup}
                 {
-                    
+
                     tokens.pop();
-                    
+
                     auto ptr = std::make_unique<sub_sup_glyph>(id);
-                    
 
                     token_container backtrack;
                     std::stack<token> backtrack_bracket;
 
-                    
-                    do 
+                    do
                     {
                         current_token = tokens.front();
                         tokens.pop();
@@ -247,7 +275,7 @@ glyph_container interpreter::run(token_container &tokens)
 
                         backtrack.push(current_token);
                     } while (current_token.type != close_b || !backtrack_bracket.empty());
-                    
+
                     sup_c = run(backtrack);
 
                     ptr->sub = std::move(sub_c);

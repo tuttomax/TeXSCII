@@ -7,6 +7,8 @@
 
 enum token_type
 {
+    
+
     general_string,
     symbol,
     number,
@@ -29,5 +31,5 @@ struct token
 };
 
 using token_container = std::queue<token>;
-
+static token empty_token = token();
 #endif //TOKEN_HPP
