@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <stack>
+#include <iostream>
 
 glyph_container interpreter::run(token_container &tokens)
 {
@@ -167,7 +168,7 @@ glyph_container interpreter::run(token_container &tokens)
             }
             else if (current_token.identifier == "sqrt")
             {
-                auto ptr = std::make_unique<sqrt>();
+                auto ptr = std::make_unique<_sqrt>();
                 std::stack<token> backtrack_bracket;
                 token_container backtrack;
 
@@ -196,9 +197,11 @@ glyph_container interpreter::run(token_container &tokens)
         else if (current_token.type == general_string || //here handle also sup '^' and sub '^'
                  current_token.type == number)
         {
-
+            std::string id = current_token.identifier;
+            
             if (next_token.type == sup)
             {
+                
                 tokens.pop();
 
                 token_container backtrack;
@@ -225,16 +228,13 @@ glyph_container interpreter::run(token_container &tokens)
             }
             else if (next_token.type == sub)
             {
-                std::string id = current_token.identifier;
-
+            
                 glyph_container sup_c, sub_c;
 
                 tokens.pop();
 
                 token_container backtrack;
                 std::stack<token> backtrack_bracket;
-
-                auto ptr = std::make_unique<sub_glyph>(current_token.identifier);
 
                 while (current_token.type != close_b || !backtrack_bracket.empty())
                 {
@@ -258,8 +258,6 @@ glyph_container interpreter::run(token_container &tokens)
 
                     tokens.pop();
 
-                    auto ptr = std::make_unique<sub_sup_glyph>(id);
-
                     token_container backtrack;
                     std::stack<token> backtrack_bracket;
 
@@ -278,6 +276,8 @@ glyph_container interpreter::run(token_container &tokens)
 
                     sup_c = run(backtrack);
 
+                    auto ptr = std::make_unique<sub_sup_glyph>(id);
+                    
                     ptr->sub = std::move(sub_c);
                     ptr->sup = std::move(sup_c);
 
@@ -285,6 +285,8 @@ glyph_container interpreter::run(token_container &tokens)
                 }
                 else
                 {
+                    auto ptr = std::make_unique<sub_glyph>(id);
+                    
                     ptr->sub = std::move(sub_c);
                     container.push(std::move(ptr));
                 }

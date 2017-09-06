@@ -12,7 +12,7 @@ struct base_glyph;
 struct glyph;
 struct fraction;
 struct root;
-struct sqrt;
+struct _sqrt;
 
 using base_glyph_ptr = std::unique_ptr<base_glyph>;
 using glyph_container = std::queue<base_glyph_ptr>;
@@ -20,7 +20,7 @@ using glyph_container = std::queue<base_glyph_ptr>;
 using glyph_ptr = std::unique_ptr<glyph>;
 using fraction = std::unique_ptr<fraction>;
 using root = std::unique_ptr<root>;
-using sqrt = std::unique_ptr<sqrt>;
+using _sqrt = std::unique_ptr<_sqrt>;
 */
 
 
@@ -66,9 +66,9 @@ struct root : glyph
     glyph_container argument;
 };
 
-struct sqrt : root
+struct _sqrt : root
 {
-    explicit sqrt() : root()
+    explicit _sqrt() : root()
     {
         power = 2;
     }
