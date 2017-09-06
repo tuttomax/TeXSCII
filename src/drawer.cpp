@@ -9,7 +9,7 @@
 static int width(glyph_container &);
 static int height(glyph_container &);
 
-static bool find__if(glyph_container &, std::function<bool(base_glyph*)>);
+static bool find__if(glyph_container &, std::function<bool(base_glyph *)>);
 
 void drawer::add_glyphes(glyph_container &container, base_glyph *sender)
 {
@@ -33,23 +33,23 @@ void drawer::add_glyph(base_glyph *ptr, base_glyph *sender)
 
     if (f = dynamic_cast<fraction *>(ptr))
     {
-        draw_fraction(f);
+        draw_fraction(f, sender);
     }
     else if (r = dynamic_cast<root *>(ptr))
     {
-        draw_root(r);
+        draw_root(r, sender);
     }
     else if (sub_g = dynamic_cast<sub_glyph *>(ptr))
     {
-        draw_sub(sub_g);
+        draw_sub(sub_g, sender);
     }
     else if (sup_g = dynamic_cast<sup_glyph *>(ptr))
     {
-        draw_sup(sup_g);
+        draw_sup(sup_g, sender);
     }
     else if (ss_g = dynamic_cast<sub_sup_glyph *>(ptr))
     {
-        draw_sub_sup(ss_g);
+        draw_sub_sup(ss_g, sender);
     }
     else if (g = dynamic_cast<glyph *>(ptr))
     {
@@ -65,17 +65,18 @@ void drawer::show(std::ostream &os)
     }
 }
 
-void drawer::draw_fraction(fraction *f)
+void drawer::draw_fraction(fraction *f,base_glyph *sender )
 {
-
+    
     int top_w = width(f->top);
     int bottom_w = width(f->bottom);
     int w = std::max(top_w, bottom_w);
     int h_t = height(f->top);
     int h_b = height(f->bottom);
-
-    int internal_pos = pos;
-
+    int start_pos = pos;
+    int top_x = start_pos + ceil(w / 2.0) - ceil(top_w / 2.0);
+    int bottom_x = start_pos + ceil(w / 2.0) - ceil(bottom_w / 2.0);
+    
     bool more_up = find__if(f->top, [](base_glyph *_ptr) -> bool {
         return (dynamic_cast<sub_glyph *>(_ptr) || dynamic_cast<sub_sup_glyph *>(_ptr));
     });
@@ -85,44 +86,42 @@ void drawer::draw_fraction(fraction *f)
     });
 
     level -= more_up ? h_t : 1;
-    table[level].position(internal_pos + floor(w / 2.0) - floor(top_w / 2.0));
-    add_glyphes(f->top, f);
+    pos = top_x;
+    add_glyphes(f->top,f);
     level += more_up ? h_t : 1;
 
-    table[level].position(internal_pos);
-    table[level].write(std::string(w, '-'));
-
     level += more_down ? h_b : 1;
-    table[level].position(internal_pos + floor(w / 2.0) - floor(bottom_w / 2.0));
-    add_glyphes(f->bottom, f);
+    pos = bottom_x;    
+    add_glyphes(f->bottom,f);
     level -= more_down ? h_b : 1;
 
-    pos = std::max(pos, table[level].position());
+    pos = start_pos;
+    table[level].write(std::string(w, '-'));
+
+    pos = std::max(pos,start_pos+w);
 }
 
-void drawer::draw_root(root *r)
+void drawer::draw_root(root *r,base_glyph *sender)
 {
-    table[level].position(pos);
-
     int h = height(r->argument);
     int w = width(r->argument);
 
     int internal_level = level;
-    int internal_pos = pos;
+    int start_pos = pos;
 
     for (int i = 0; i <= h; i++)
     {
-        table[internal_level].position(internal_pos);
+        table[internal_level].position(start_pos);
         if (i == 0)
         {
             table[internal_level--].write('V');
-            internal_pos++;
+            start_pos++;
         }
         else if (i == h)
         {
             if (!dynamic_cast<_sqrt *>(r))
             {
-                table[internal_level].position(internal_pos - 1);
+                table[internal_level].position(start_pos - 1);
                 table[internal_level].write(r->power);
             }
             table[internal_level--].write(std::string(w, '_'));
@@ -130,19 +129,19 @@ void drawer::draw_root(root *r)
         else
         {
             table[internal_level--].write('/');
-            internal_pos++;
+            start_pos++;
         }
     }
 
     bool adjust_level = find__if(r->argument, [](base_glyph *ptr) { return dynamic_cast<fraction *>(ptr) || dynamic_cast<sub_sup_glyph *>(ptr) || dynamic_cast<sub_glyph *>(ptr); });
     if (adjust_level)
         level--; //FIX
-    pos = internal_pos;
-    add_glyphes(r->argument, r);
+    pos = start_pos;
+    add_glyphes(r->argument,sender);
     pos = std::max(pos, table[level].position());
 }
 
-void drawer::draw_sub(sub_glyph *s)
+void drawer::draw_sub(sub_glyph *s,base_glyph *sender)
 {
     table[level].position(pos);
     table[level].write(s->data);
@@ -150,11 +149,11 @@ void drawer::draw_sub(sub_glyph *s)
 
     int h = height(s->sub);
     level += h;
-    add_glyphes(s->sub, s);
+    add_glyphes(s->sub,sender);
     level -= h;
 }
 
-void drawer::draw_sup(sup_glyph *s)
+void drawer::draw_sup(sup_glyph *s,base_glyph *sender)
 {
     table[level].position(pos);
     table[level].write(s->data);
@@ -163,67 +162,49 @@ void drawer::draw_sup(sup_glyph *s)
     int h = height(s->sup);
 
     level -= h;
-    add_glyphes(s->sup, s);
+    add_glyphes(s->sup,sender);
     level += h;
 }
-void drawer::draw_sub_sup(sub_sup_glyph *s)
+void drawer::draw_sub_sup(sub_sup_glyph *s,base_glyph *sender)
 {
     table[level].position(pos);
     table[level].write(s->data);
     pos = std::max(pos, table[level].position());
+
+    int start_pos = pos;
 
     int h_t = height(s->sup);
     int h_b = height(s->sub);
     int w_t = width(s->sup);
     int w_b = width(s->sub);
 
+
     level -= h_t;
-    add_glyphes(s->sup, s);
+    table[level].position(start_pos);
+    add_glyphes(s->sup,s);
     level += h_t;
 
     level += h_b;
-    add_glyphes(s->sub, s);
+    table[level].position(start_pos);    
+    add_glyphes(s->sub,s);
     level -= h_b;
 
-    pos += std::max(w_t, w_b);
+    
 }
 void drawer::draw_glyph(glyph *g, base_glyph *sender)
 {
-    table[level].position(pos);
-    table[level].write(g->data);
-    pos = std::max(pos, table[level].position());  
-    /*
     if (sender)
     {
-        if (dynamic_cast<fraction *>(sender))
+        if (dynamic_cast<sub_sup_glyph*>(sender))
         {
-            table[level].position(pos);
             table[level].write(g->data);
-            pos = std::max(pos, table[level].position());            
+            pos = std::max(pos, table[level].position());  
         }
-        else if (dynamic_cast<root *>(sender))
+        else if (dynamic_cast<fraction*>(sender))
         {
             table[level].position(pos);
             table[level].write(g->data);
-            pos = std::max(pos, table[level].position());
-        }
-        else if (dynamic_cast<sub_sup_glyph *>(sender))
-        {
-            table[level].position(pos);
-            table[level].write(g->data);
-            pos = std::max(pos, table[level].position());
-        }
-        else if (dynamic_cast<sub_glyph *>(sender))
-        {
-            table[level].position(pos);
-            table[level].write(g->data);
-            pos = std::max(pos, table[level].position());
-        }
-        else if (dynamic_cast<sup_glyph *>(sender))
-        {
-            table[level].position(pos);
-            table[level].write(g->data);
-            pos = std::max(pos, table[level].position());
+            pos = std::max(pos, table[level].position());     
         }
     }
     else
@@ -232,7 +213,6 @@ void drawer::draw_glyph(glyph *g, base_glyph *sender)
         table[level].write(g->data);
         pos = std::max(pos, table[level].position());
     }
-    */
 }
 
 static int width(glyph_container &container)
@@ -337,7 +317,7 @@ static int height(glyph_container &container)
     return h;
 }
 
-static bool find__if(glyph_container & container, std::function<bool(base_glyph*)> predicate)
+static bool find__if(glyph_container &container, std::function<bool(base_glyph *)> predicate)
 {
     int start = container.size();
     bool found = false;
@@ -347,7 +327,8 @@ static bool find__if(glyph_container & container, std::function<bool(base_glyph*
         auto item = std::move(container.front());
         container.pop();
 
-        if (!found) found = predicate(item.get());
+        if (!found)
+            found = predicate(item.get());
 
         container.push(std::move(item));
 
@@ -356,4 +337,3 @@ static bool find__if(glyph_container & container, std::function<bool(base_glyph*
 
     return found;
 }
-

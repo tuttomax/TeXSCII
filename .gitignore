@@ -4,10 +4,6 @@
 
 #CMake
 build
-CMakeLists.txt
-
-#Custom
-*.ps1
 
 # Prerequisites
 *.d

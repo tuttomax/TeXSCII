@@ -21,11 +21,11 @@ public:
 private:
   void add_glyph(base_glyph *, base_glyph *sender = nullptr);
 
-  void draw_fraction(fraction *);
-  void draw_root(root *);
-  void draw_sup(sup_glyph *);
-  void draw_sub(sub_glyph *);
-  void draw_sub_sup(sub_sup_glyph *);
+  void draw_fraction(fraction *,base_glyph *sender = nullptr);
+  void draw_root(root *,base_glyph *sender = nullptr);
+  void draw_sup(sup_glyph *,base_glyph *sender = nullptr);
+  void draw_sub(sub_glyph *,base_glyph *sender = nullptr);
+  void draw_sub_sup(sub_sup_glyph *,base_glyph *sender = nullptr);
   void draw_glyph(glyph *, base_glyph *sender = nullptr);
 
   int pos = 0;
